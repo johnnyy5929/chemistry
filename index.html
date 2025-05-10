@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Periodic Table Matcher - All Elements</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            text-align: center;
+            background-color: #f5f5f5;
+        }
+        
+        h1 {
+            color: #2c3e50;
+        }
+        
+        #game-container {
+            background-color: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        #element-symbol {
+            font-size: 72px;
+            font-weight: bold;
+            margin: 20px 0;
+            color: #3498db;
+            height: 100px;
+        }
+        
+        #answer-input {
+            padding: 10px;
+            font-size: 16px;
+            width: 200px;
+            margin: 10px;
+            border: 2px solid #3498db;
+            border-radius: 5px;
+        }
+        
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: #2980b9;
+        }
+        
+        button:disabled {
+            background-color: #95a5a6;
+            cursor: not-allowed;
+        }
+        
+        #score {
+            font-size: 18px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        
+        #progress {
+            margin-top: 20px;
+            font-size: 14px;
+            color: #7f8c8d;
+        }
+        
+        #hint {
+            margin: 10px 0;
+            font-style: italic;
+            color: #7f8c8d;
+            min-height: 20px;
+        }
+        
+        #difficulty {
+            margin: 15px 0;
+        }
+        
+        .correct {
+            color: #27ae60;
+        }
+        
+        .incorrect {
+            color: #e74c3c;
+        }
+    </style>
+</head>
+<body>
+    <h1>Periodic Table Matcher</h1>
+    <div id="game-container">
+        <div id="score">Score: 0</div>
+        <div id="element-symbol"></div>
+        <div id="hint"></div>
+        <p>What is the name of this element?</p>
+        <input type="text" id="answer-input" placeholder="Element name">
+        <div>
+            <button id="submit-btn">Submit</button>
+            <button id="next-btn" disabled>Next Element</button>
+        </div>
+        <div id="difficulty">
+            <label for="difficulty-select">Difficulty: </label>
+            <select id="difficulty-select">
+                <option value="all">All Elements (118)</option>
+                <option value="first40">First 40 Elements</option>
+                <option value="common">Common Elements (56)</option>
+            </select>
+        </div>
+        <div id="progress"></div>
+    </div>
+
+    <script>
+        // Complete periodic table with all 118 elements
+        const allElements = {
+            // First 40 elements
+            "H": {name: "Hydrogen", atomicNumber: 1, group: 1, period: 1},
+            "He": {name: "Helium", atomicNumber: 2, group: 18, period: 1},
+            "Li": {name: "Lithium", atomicNumber: 3, group: 1, period: 2},
+            "Be": {name: "Beryllium", atomicNumber: 4, group: 2, period: 2},
+            "B": {name: "Boron", atomicNumber: 5, group: 13, period: 2},
+            "C": {name: "Carbon", atomicNumber: 6, group: 14, period: 2},
+            "N": {name: "Nitrogen", atomicNumber: 7, group: 15, period: 2},
+            "O": {name: "Oxygen", atomicNumber: 8, group: 16, period: 2},
+            "F": {name: "Fluorine", atomicNumber: 9, group: 17, period: 2},
+            "Ne": {name: "Neon", atomicNumber: 10, group: 18, period: 2},
+            "Na": {name: "Sodium", atomicNumber: 11, group: 1, period: 3},
+            "Mg": {name: "Magnesium", atomicNumber: 12, group: 2, period: 3},
+            "Al": {name: "Aluminum", atomicNumber: 13, group: 13, period: 3},
+            "Si": {name: "Silicon", atomicNumber: 14, group: 14, period: 3},
+            "P": {name: "Phosphorus", atomicNumber: 15, group: 15, period: 3},
+            "S": {name: "Sulfur", atomicNumber: 16, group: 16, period: 3},
+            "Cl": {name: "Chlorine", atomicNumber: 17, group: 17, period: 3},
+            "Ar": {name: "Argon", atomicNumber: 18, group: 18, period: 3},
+            "K": {name: "Potassium", atomicNumber: 19, group: 1, period: 4},
+            "Ca": {name: "Calcium", atomicNumber: 20, group: 2, period: 4},
+            "Sc": {name: "Scandium", atomicNumber: 21, group: 3, period: 4},
+            "Ti": {name: "Titanium", atomicNumber: 22, group: 4, period: 4},
+            "V": {name: "Vanadium", atomicNumber: 23, group: 5, period: 4},
+            "Cr": {name: "Chromium", atomicNumber: 24, group: 6, period: 4},
+            "Mn": {name: "Manganese", atomicNumber: 25, group: 7, period: 4},
+            "Fe": {name: "Iron", atomicNumber: 26, group: 8, period: 4},
+            "Co": {name: "Cobalt", atomicNumber: 27, group: 9, period: 4},
+            "Ni": {name: "Nickel", atomicNumber: 28, group: 10, period: 4},
+            "Cu": {name: "Copper", atomicNumber: 29, group: 11, period: 4},
+            "Zn": {name: "Zinc", atomicNumber: 30, group: 12, period: 4},
+            "Ga": {name: "Gallium", atomicNumber: 31, group: 13, period: 4},
+            "Ge": {name: "Germanium", atomicNumber: 32, group: 14, period: 4},
+            "As": {name: "Arsenic", atomicNumber: 33, group: 15, period: 4},
+            "Se": {name: "Selenium", atomicNumber: 34, group: 16, period: 4},
+            "Br": {name: "Bromine", atomicNumber: 35, group: 17, period: 4},
+            "Kr": {name: "Krypton", atomicNumber: 36, group: 18, period: 4},
+            "Rb": {name: "Rubidium", atomicNumber: 37, group: 1, period: 5},
+            "Sr": {name: "Strontium", atomicNumber: 38, group: 2, period: 5},
+            "Y": {name: "Yttrium", atomicNumber: 39, group: 3, period: 5},
+            "Zr": {name: "Zirconium", atomicNumber: 40, group: 4, period: 5},
+            
+            // Additional common elements (up to 56)
+            "Nb": {name: "Niobium", atomicNumber: 41, group: 5, period: 5},
+            "Mo": {name: "Molybdenum", atomicNumber: 42, group: 6, period: 5},
+            "Tc": {name: "Technetium", atomicNumber: 43, group: 7, period: 5},
+            "Ru": {name: "Ruthenium", atomicNumber: 44, group: 8, period: 5},
+            "Rh": {name: "Rhodium", atomicNumber: 45, group: 9, period: 5},
+            "Pd": {name: "Palladium", atomicNumber: 46, group: 10, period: 5},
+            "Ag": {name: "Silver", atomicNumber: 47, group: 11, period: 5},
+            "Cd": {name: "Cadmium", atomicNumber: 48, group: 12, period: 5},
+            "In": {name: "Indium", atomicNumber: 49, group: 13, period: 5},
+            "Sn": {name: "Tin", atomicNumber: 50, group: 14, period: 5},
+            "Sb": {name: "Antimony", atomicNumber: 51, group: 15, period: 5},
+            "Te": {name: "Tellurium", atomicNumber: 52, group: 16, period: 5},
+            "I": {name: "Iodine", atomicNumber: 53, group: 17, period: 5},
+            "Xe": {name: "Xenon", atomicNumber: 54, group: 18, period: 5},
+            "Cs": {name: "Cesium", atomicNumber: 55, group: 1, period: 6},
+            "Ba": {name: "Barium", atomicNumber: 56, group: 2, period: 6},
+            
+            // Remaining elements up to 118
+            "La": {name: "Lanthanum", atomicNumber: 57, group: 3, period: 6},
+            "Ce": {name: "Cerium", atomicNumber: 58, group: null, period: 6},
+            "Pr": {name: "Praseodymium", atomicNumber: 59, group: null, period: 6},
+            "Nd": {name: "Neodymium", atomicNumber: 60, group: null, period: 6},
+            "Pm": {name: "Promethium", atomicNumber: 61, group: null, period: 6},
+            "Sm": {name: "Samarium", atomicNumber: 62, group: null, period: 6},
+            "Eu": {name: "Europium", atomicNumber: 63, group: null, period: 6},
+            "Gd": {name: "Gadolinium", atomicNumber: 64, group: null, period: 6},
+            "Tb": {name: "Terbium", atomicNumber: 65, group: null, period: 6},
+            "Dy": {name: "Dysprosium", atomicNumber: 66, group: null, period: 6},
+            "Ho": {name: "Holmium", atomicNumber: 67, group: null, period: 6},
+            "Er": {name: "Erbium", atomicNumber: 68, group: null, period: 6},
+            "Tm": {name: "Thulium", atomicNumber: 69, group: null, period: 6},
+            "Yb": {name: "Ytterbium", atomicNumber: 70, group: null, period: 6},
+            "Lu": {name: "Lutetium", atomicNumber: 71, group: 3, period: 6},
+            "Hf": {name: "Hafnium", atomicNumber: 72, group: 4, period: 6},
+            "Ta": {name: "Tantalum", atomicNumber: 73, group: 5, period: 6},
+            "W": {name: "Tungsten", atomicNumber: 74, group: 6, period: 6},
+            "Re": {name: "Rhenium", atomicNumber: 75, group: 7, period: 6},
+            "Os": {name: "Osmium", atomicNumber: 76, group: 8, period: 6},
+            "Ir": {name: "Iridium", atomicNumber: 77, group: 9, period: 6},
+            "Pt": {name: "Platinum", atomicNumber: 78, group: 10, period: 6},
+            "Au": {name: "Gold", atomicNumber: 79, group: 11, period: 6},
+            "Hg": {name: "Mercury", atomicNumber: 80, group: 12, period: 6},
+            "Tl": {name: "Thallium", atomicNumber: 81, group: 13, period: 6},
+            "Pb": {name: "Lead", atomicNumber: 82, group: 14, period: 6},
+            "Bi": {name: "Bismuth", atomicNumber: 83, group: 15, period: 6},
+            "Po": {name: "Polonium", atomicNumber: 84, group: 16, period: 6},
+            "At": {name: "Astatine", atomicNumber: 85, group: 17, period: 6},
+            "Rn": {name: "Radon", atomicNumber: 86, group: 18, period: 6},
+            "Fr": {name: "Francium", atomicNumber: 87, group: 1, period: 7},
+            "Ra": {name: "Radium", atomicNumber: 88, group: 2, period: 7},
+            "Ac": {name: "Actinium", atomicNumber: 89, group: 3, period: 7},
+            "Th": {name: "Thorium", atomicNumber: 90, group: null, period: 7},
+            "Pa": {name: "Protactinium", atomicNumber: 91, group: null, period: 7},
+            "U": {name: "Uranium", atomicNumber: 92, group: null, period: 7},
+            "Np": {name: "Neptunium", atomicNumber: 93, group: null, period: 7},
+            "Pu": {name: "Plutonium", atomicNumber: 94, group: null, period: 7},
+            "Am": {name: "Americium", atomicNumber: 95, group: null, period: 7},
+            "Cm": {name: "Curium", atomicNumber: 96, group: null, period: 7},
+            "Bk": {name: "Berkelium", atomicNumber: 97, group: null, period: 7},
+            "Cf": {name: "Californium", atomicNumber: 98, group: null, period: 7},
+            "Es": {name: "Einsteinium", atomicNumber: 99, group: null, period: 7},
+            "Fm": {name: "Fermium", atomicNumber: 100, group: null, period: 7},
+            "Md": {name: "Mendelevium", atomicNumber: 101, group: null, period: 7},
+            "No": {name: "Nobelium", atomicNumber: 102, group: null, period: 7},
+            "Lr": {name: "Lawrencium", atomicNumber: 103, group: 3, period: 7},
+            "Rf": {name: "Rutherfordium", atomicNumber: 104, group: 4, period: 7},
+            "Db": {name: "Dubnium", atomicNumber: 105, group: 5, period: 7},
+            "Sg": {name: "Seaborgium", atomicNumber: 106, group: 6, period: 7},
+            "Bh": {name: "Bohrium", atomicNumber: 107, group: 7, period: 7},
+            "Hs": {name: "Hassium", atomicNumber: 108, group: 8, period: 7},
+            "Mt": {name: "Meitnerium", atomicNumber: 109, group: 9, period: 7},
+            "Ds": {name: "Darmstadtium", atomicNumber: 110, group: 10, period: 7},
+            "Rg": {name: "Roentgenium", atomicNumber: 111, group: 11, period: 7},
+            "Cn": {name: "Copernicium", atomicNumber: 112, group: 12, period: 7},
+            "Nh": {name: "Nihonium", atomicNumber: 113, group: 13, period: 7},
+            "Fl": {name: "Flerovium", atomicNumber: 114, group: 14, period: 7},
+            "Mc": {name: "Moscovium", atomicNumber: 115, group: 15, period: 7},
+            "Lv": {name: "Livermorium", atomicNumber: 116, group: 16, period: 7},
+            "Ts": {name: "Tennessine", atomicNumber: 117, group: 17, period: 7},
+            "Og": {name: "Oganesson", atomicNumber: 118, group: 18, period: 7}
+        };
+
+        // Common elements subset (56 elements)
+        const commonElements = {
+            "H": allElements["H"], "He": allElements["He"], "Li": allElements["Li"],
+            "Be": allElements["Be"], "B": allElements["B"], "C": allElements["C"],
+            "N": allElements["N"], "O": allElements["O"], "F": allElements["F"],
+            "Ne": allElements["Ne"], "Na": allElements["Na"], "Mg": allElements["Mg"],
+            "Al": allElements["Al"], "Si": allElements["Si"], "P": allElements["P"],
+            "S": allElements["S"], "Cl": allElements["Cl"], "Ar": allElements["Ar"],
+            "K": allElements["K"], "Ca": allElements["Ca"], "Sc": allElements["Sc"],
+            "Ti": allElements["Ti"], "V": allElements["V"], "Cr": allElements["Cr"],
+            "Mn": allElements["Mn"], "Fe": allElements["Fe"], "Co": allElements["Co"],
+            "Ni": allElements["Ni"], "Cu": allElements["Cu"], "Zn": allElements["Zn"],
+            "Ga": allElements["Ga"], "Ge": allElements["Ge"], "As": allElements["As"],
+            "Se": allElements["Se"], "Br": allElements["Br"], "Kr": allElements["Kr"],
+            "Rb": allElements["Rb"], "Sr": allElements["Sr"], "Y": allElements["Y"],
+            "Zr": allElements["Zr"], "Nb": allElements["Nb"], "Mo": allElements["Mo"],
+            "Tc": allElements["Tc"], "Ru": allElements["Ru"], "Rh": allElements["Rh"],
+            "Pd": allElements["Pd"], "Ag": allElements["Ag"], "Cd": allElements["Cd"],
+            "In": allElements["In"], "Sn": allElements["Sn"], "Sb": allElements["Sb"],
+            "Te": allElements["Te"], "I": allElements["I"], "Xe": allElements["Xe"],
+            "Cs": allElements["Cs"], "Ba": allElements["Ba"]
+        };
+
+        // First 40 elements subset
+        const first40Elements = {
+            "H": allElements["H"], "He": allElements["He"], "Li": allElements["Li"],
+            "Be": allElements["Be"], "B": allElements["B"], "C": allElements["C"],
+            "N": allElements["N"], "O": allElements["O"], "F": allElements["F"],
+            "Ne": allElements["Ne"], "Na": allElements["Na"], "Mg": allElements["Mg"],
+            "Al": allElements["Al"], "Si": allElements["Si"], "P": allElements["P"],
+            "S": allElements["S"], "Cl": allElements["Cl"], "Ar": allElements["Ar"],
+            "K": allElements["K"], "Ca": allElements["Ca"], "Sc": allElements["Sc"],
+            "Ti": allElements["Ti"], "V": allElements["V"], "Cr": allElements["Cr"],
+            "Mn": allElements["Mn"], "Fe": allElements["Fe"], "Co": allElements["Co"],
+            "Ni": allElements["Ni"], "Cu": allElements["Cu"], "Zn": allElements["Zn"],
+            "Ga": allElements["Ga"], "Ge": allElements["Ge"], "As": allElements["As"],
+            "Se": allElements["Se"], "Br": allElements["Br"], "Kr": allElements["Kr"],
+            "Rb": allElements["Rb"], "Sr": allElements["Sr"], "Y": allElements["Y"],
+            "Zr": allElements["Zr"]
+        };
+
+        let score = 0;
+        let currentElement = "";
+        let usedElements = new Set();
+        let currentElementSet = allElements;
+
+        const elementSymbol = document.getElementById('element-symbol');
+        const answerInput = document.getElementById('answer-input');
+        const submitBtn = document.getElementById('submit-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const scoreDisplay = document.getElementById('score');
+        const progressDisplay = document.getElementById('progress');
+        const hintDisplay = document.getElementById('hint');
+        const difficultySelect = document.getElementById('difficulty-select');
+
+        // Initialize the game
+        newQuestion();
+
+        // Event listeners
+        submitBtn.addEventListener('click', checkAnswer);
+        nextBtn.addEventListener('click', newQuestion);
+        answerInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                checkAnswer();
+            }
+        });
+        
+        difficultySelect.addEventListener('change', function() {
+            switch(this.value) {
+                case 'all':
+                    currentElementSet = allElements;
+                    break;
+                case 'first40':
+                    currentElementSet = first40Elements;
+                    break;
+                case 'common':
+                    currentElementSet = commonElements;
+                    break;
+            }
+            // Reset game with new element set
+            score = 0;
+            scoreDisplay.textContent = `Score: ${score}`;
+            usedElements = new Set();
+            newQuestion();
+        });
+
+        function newQuestion() {
+            if (usedElements.size === Object.keys(currentElementSet).length) {
+                alert(`Game Over! Final Score: ${score}/${Object.keys(currentElementSet).length}`);
+                return;
+            }
+
+            // Get available elements
+            const availableElements = Object.keys(currentElementSet).filter(
+                element => !usedElements.has(element)
+            );
+
+            // Select random element
+            currentElement = availableElements[
+                Math.floor(Math.random() * availableElements.length)
+            ];
+            usedElements.add(currentElement);
+
+            // Update UI
+            elementSymbol.textContent = currentElement;
+            answerInput.value = '';
+            answerInput.focus();
+            nextBtn.disabled = true;
+            submitBtn.disabled = false;
+            hintDisplay.textContent = '';
+            
+            // Update progress
+            progressDisplay.textContent = 
+                `Progress: ${usedElements.size}/${Object.keys(currentElementSet).length}`;
+        }
+
+        function checkAnswer() {
+            const userAnswer = answerInput.value.trim();
+            const correctAnswer = currentElementSet[currentElement].name;
+
+            if (userAnswer.toLowerCase() === correctAnswer.toLowerCase()) {
+                score++;
+                scoreDisplay.textContent = `Score: ${score}`;
+                hintDisplay.textContent = `Correct! It's ${correctAnswer}.`;
+                hintDisplay.className = 'correct';
+            } else {
+                hintDisplay.textContent = `Incorrect. The correct answer is ${correctAnswer}.`;
+                hintDisplay.className = 'incorrect';
+            }
+
+            submitBtn.disabled = true;
+            nextBtn.disabled = false;
+            nextBtn.focus();
+        }
+    </script>
+</body>
+</html>
